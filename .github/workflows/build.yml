@@ -23,8 +23,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Refresh font cache
-        run: fc-cache -f
+      - name: Make sure required fonts are registered with fontconfig
+        run: |
+          set -e
+          mkdir -p /usr/local/share/fonts
+          # texlive/texlive ships Lora, XCharter and DejaVu inside its TeX
+          # tree as texlive packages, but they aren't always pre-registered
+          # with fontconfig. Copy whatever exists into a scanned dir, then
+          # rebuild the cache, so fontspec (\IfFontExistsTF, \setmainfont)
+          # can find them by family name.
+          find / -path /proc -prune -o \( -iname "Lora*.otf" -o -iname "Lora*.ttf" \) -print 2>/dev/null \
+            | xargs -r -I{} cp -n {} /usr/local/share/fonts/
+          find / -path /proc -prune -o -iname "XCharter*.otf" -print 2>/dev/null \
+            | xargs -r -I{} cp -n {} /usr/local/share/fonts/
+          find / -path /proc -prune -o -iname "DejaVuSansCondensed*.ttf" -print 2>/dev/null \
+            | xargs -r -I{} cp -n {} /usr/local/share/fonts/
+          fc-cache -f
+          echo "== Font availability =="
+          fc-list | grep -i "Lora" || { echo "::error::Lora font not found anywhere in the image"; exit 1; }
+          fc-list | grep -i "DejaVu Sans Condensed" || { echo "::error::DejaVu Sans Condensed not found anywhere in the image"; exit 1; }
+          fc-list | grep -iE "Bitstream Charter|XCharter|: Charter:" || { echo "::error::No Charter-family font (Bitstream Charter / Charter / XCharter) found"; exit 1; }
 
       - name: Compile booking sheet (run twice for cross-references)
         run: |
