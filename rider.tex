@@ -20,7 +20,11 @@
 % ---------- Fonts (xelatex, system fonts) ----------
 \usepackage{fontspec}
 \setmainfont{Lora}[Mapping=tex-text]
-\newfontfamily\serifreader{Bitstream Charter}[Mapping=tex-text]
+\IfFontExistsTF{Bitstream Charter}
+  {\newfontfamily\serifreader{Bitstream Charter}[Mapping=tex-text]}
+  {\IfFontExistsTF{Charter}
+    {\newfontfamily\serifreader{Charter}[Mapping=tex-text]} % macOS name
+    {\newfontfamily\serifreader{XCharter}[Mapping=tex-text]}} % Linux/TeX Live name
 \newfontfamily\labelfont{DejaVu Sans Condensed}[Mapping=tex-text]
 
 % ---------- Colour palette (identical to main.tex) ----------
