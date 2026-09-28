@@ -26,6 +26,7 @@ jobs:
         with:
           root_file: booking_sheet.tex
           args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
+          extra_font_packages: fonts
 
       - name: Report booking sheet failure
         if: steps.compile_booking_sheet.outcome == 'failure'
@@ -40,6 +41,7 @@ jobs:
         with:
           root_file: rider.tex
           args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
+          extra_font_packages: fonts
 
       - name: Report rider failure
         if: steps.compile_rider.outcome == 'failure'
