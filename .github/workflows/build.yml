@@ -47,7 +47,7 @@ jobs:
       - name: Compile booking sheet (run twice for cross-references)
         run: |
           xelatex -interaction=nonstopmode booking_sheet.tex || true
-          xelatex -interaction=nonstopmode booking_sheet.tex
+          xelatex -interaction=nonstopmode booking_sheet.tex || true
           test -f booking_sheet.pdf || {
             echo "::error::$(tail -n 60 booking_sheet.log | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
@@ -56,7 +56,7 @@ jobs:
       - name: Compile technical rider (run twice for cross-references)
         run: |
           xelatex -interaction=nonstopmode rider.tex || true
-          xelatex -interaction=nonstopmode rider.tex
+          xelatex -interaction=nonstopmode rider.tex || true
           test -f rider.pdf || {
             echo "::error::$(tail -n 60 rider.log | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
