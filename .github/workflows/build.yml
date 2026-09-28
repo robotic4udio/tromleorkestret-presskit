@@ -20,16 +20,32 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Compile booking sheet
+        id: compile_booking_sheet
+        continue-on-error: true
         uses: dante-ev/latex-action@latest
         with:
           root_file: booking_sheet.tex
           args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
 
+      - name: Report booking sheet failure
+        if: steps.compile_booking_sheet.outcome == 'failure'
+        run: |
+          echo "::error::booking_sheet.pdf failed to build. Log tail:%0A$(tail -n 60 booking_sheet.log 2>/dev/null | sed ':a;N;$!ba;s/\n/%0A/g')"
+          exit 1
+
       - name: Compile technical rider
+        id: compile_rider
+        continue-on-error: true
         uses: dante-ev/latex-action@latest
         with:
           root_file: rider.tex
           args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
+
+      - name: Report rider failure
+        if: steps.compile_rider.outcome == 'failure'
+        run: |
+          echo "::error::rider.pdf failed to build. Log tail:%0A$(tail -n 60 rider.log 2>/dev/null | sed ':a;N;$!ba;s/\n/%0A/g')"
+          exit 1
 
       - name: Rename and validate PDFs
         run: |
