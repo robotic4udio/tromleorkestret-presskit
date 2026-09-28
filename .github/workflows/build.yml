@@ -23,13 +23,13 @@ jobs:
         uses: dante-ev/latex-action@latest
         with:
           root_file: booking_sheet.tex
-          latexmk_use_xelatex: true
+          args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
 
       - name: Compile technical rider
         uses: dante-ev/latex-action@latest
         with:
           root_file: rider.tex
-          latexmk_use_xelatex: true
+          args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
 
       - name: Rename and validate PDFs
         run: |
