@@ -13,80 +13,41 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Full TeX Live install (includes Lora, XCharter and DejaVu as
-    # texlive-managed font packages, so fontspec can find them by name).
-    container:
-      image: texlive/texlive:latest
     permissions:
       contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Make sure required fonts are registered with fontconfig
-        run: |
-          set -e
-          mkdir -p /usr/local/share/fonts
-          # texlive/texlive ships Lora, XCharter and DejaVu inside its TeX
-          # tree as texlive packages, but they aren't always pre-registered
-          # with fontconfig. Copy whatever exists into a scanned dir, then
-          # rebuild the cache, so fontspec (\IfFontExistsTF, \setmainfont)
-          # can find them by family name.
-          find / -path /proc -prune -o \( -iname "Lora*.otf" -o -iname "Lora*.ttf" \) -print 2>/dev/null \
-            | xargs -r -I{} cp -n {} /usr/local/share/fonts/
-          find / -path /proc -prune -o -iname "XCharter*.otf" -print 2>/dev/null \
-            | xargs -r -I{} cp -n {} /usr/local/share/fonts/
-          find / -path /proc -prune -o -iname "DejaVuSansCondensed*.ttf" -print 2>/dev/null \
-            | xargs -r -I{} cp -n {} /usr/local/share/fonts/
-          fc-cache -f
-          echo "== Font availability =="
-          fc-list | grep -i "Lora" || { echo "::error::Lora font not found anywhere in the image"; exit 1; }
-          fc-list | grep -i "DejaVu Sans Condensed" || { echo "::error::DejaVu Sans Condensed not found anywhere in the image"; exit 1; }
-          fc-list | grep -iE "Bitstream Charter|XCharter|: Charter:" || { echo "::error::No Charter-family font (Bitstream Charter / Charter / XCharter) found"; exit 1; }
+      - name: Compile booking sheet
+        uses: dante-ev/latex-action@v2
+        with:
+          root_file: booking_sheet.tex
+          latexmk_use_xelatex: true
 
-      - name: Install poppler-utils (for output validation)
-        run: apt-get update && apt-get install -y --no-install-recommends poppler-utils
+      - name: Compile technical rider
+        uses: dante-ev/latex-action@v2
+        with:
+          root_file: rider.tex
+          latexmk_use_xelatex: true
 
-      - name: Compile booking sheet (run twice for cross-references)
+      - name: Rename and validate PDFs
         run: |
-          xelatex -interaction=nonstopmode booking_sheet.tex || true
-          xelatex -interaction=nonstopmode booking_sheet.tex || true
-          sync
-          pages=$(pdfinfo booking_sheet.pdf 2>/dev/null | awk '/^Pages:/{print $2}')
-          if [ "$pages" != "2" ]; then
-            echo "::error::booking_sheet.pdf has '${pages}' pages (expected 2). Log tail:%0A$(tail -n 60 booking_sheet.log | sed ':a;N;$!ba;s/\n/%0A/g')"
-            exit 1
-          fi
-
-      - name: Compile technical rider (run twice for cross-references)
-        run: |
-          xelatex -interaction=nonstopmode rider.tex || true
-          xelatex -interaction=nonstopmode rider.tex || true
-          sync
-          pages=$(pdfinfo rider.pdf 2>/dev/null | awk '/^Pages:/{print $2}')
-          if [ "$pages" != "2" ]; then
-            echo "::error::rider.pdf has '${pages}' pages (expected 2). Log tail:%0A$(tail -n 60 rider.log | sed ':a;N;$!ba;s/\n/%0A/g')"
-            exit 1
-          fi
-
-      - name: Rename PDFs to their display names
-        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
           cp booking_sheet.pdf "Tromleorkestret - Booking Sheet.pdf"
           cp rider.pdf "Tromleorkestret - Technical Rider.pdf"
-          sync
           for f in "Tromleorkestret - Booking Sheet.pdf" "Tromleorkestret - Technical Rider.pdf"; do
             size=$(stat -c%s "$f")
             pages=$(pdfinfo "$f" 2>/dev/null | awk '/^Pages:/{print $2}')
             echo "$f: ${size} bytes, ${pages} pages"
             if [ "$size" -lt 200000 ] || [ "$pages" != "2" ]; then
-              echo "::error::'$f' looks truncated or invalid (${size} bytes, ${pages} pages) after copy"
+              echo "::error::'$f' looks truncated or invalid (${size} bytes, ${pages} pages)"
               exit 1
             fi
           done
 
       - name: Commit updated PDFs
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f "Tromleorkestret - Booking Sheet.pdf" "Tromleorkestret - Technical Rider.pdf"
