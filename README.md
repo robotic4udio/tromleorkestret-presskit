@@ -12,7 +12,7 @@ Hand-editable XeLaTeX press/booking documents for Tromleorkestret.
 
 ## Building
 
-Requires XeLaTeX with system fonts Lora, Bitstream Charter (or macOS "Charter"), and DejaVu Sans Condensed.
+Requires XeLaTeX with the system fonts Bitstream Charter (or macOS "Charter", or TeX Live's XCharter) and DejaVu Sans Condensed. Lora comes with the repo, in `fonts/` (static files from the Lora project, SIL Open Font License); use those, not a variable Lora: XeLaTeX on Linux can't embed a variable font.
 
 ```bash
 xelatex -interaction=nonstopmode booking_sheet.tex
