@@ -7,6 +7,7 @@ on:
       - "booking_sheet.tex"
       - "rider.tex"
       - "img/**"
+      - "fonts/**"
       - ".github/workflows/build.yml"
   workflow_dispatch: {}
 
@@ -22,11 +23,11 @@ jobs:
       - name: Compile booking sheet
         id: compile_booking_sheet
         continue-on-error: true
-        uses: dante-ev/latex-action@latest
+        # Pinned: @latest moved to a new TeX Live under the build once already
+        uses: dante-ev/latex-action@2026-B
         with:
           root_file: booking_sheet.tex
           args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
-          extra_font_packages: fonts
 
       - name: Report booking sheet failure
         if: steps.compile_booking_sheet.outcome == 'failure'
@@ -37,11 +38,10 @@ jobs:
       - name: Compile technical rider
         id: compile_rider
         continue-on-error: true
-        uses: dante-ev/latex-action@latest
+        uses: dante-ev/latex-action@2026-B
         with:
           root_file: rider.tex
           args: -pdfxe -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
-          extra_font_packages: fonts
 
       - name: Report rider failure
         if: steps.compile_rider.outcome == 'failure'

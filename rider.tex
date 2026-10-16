@@ -19,7 +19,11 @@
 
 % ---------- Fonts (xelatex, system fonts) ----------
 \usepackage{fontspec}
-\setmainfont{Lora}[Mapping=tex-text]
+% Lora from fonts/ (static files from the Lora project, SIL OFL): the same on every machine,
+% and xdvipdfmx on Linux can't embed the variable Lora that TeX Live and Google Fonts ship.
+\setmainfont{Lora}[Mapping=tex-text, Path=fonts/, Extension=.ttf,
+  UprightFont=*-Regular, BoldFont=*-Bold, ItalicFont=*-Italic,
+  BoldItalicFont=*-Italic] % the titles' \itshape\bfseries keep their light italic, as the sheets always looked
 \IfFontExistsTF{Bitstream Charter}
   {\newfontfamily\serifreader{Bitstream Charter}[Mapping=tex-text]}
   {\IfFontExistsTF{Charter}
