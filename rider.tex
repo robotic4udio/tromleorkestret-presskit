@@ -29,7 +29,9 @@
   {\IfFontExistsTF{Charter}
     {\newfontfamily\serifreader{Charter}[Mapping=tex-text]} % macOS name
     {\newfontfamily\serifreader{XCharter}[Mapping=tex-text]}} % Linux/TeX Live name
-\newfontfamily\labelfont{DejaVu Sans Condensed}[Mapping=tex-text]
+% DejaVu Sans Condensed from fonts/ too (regular and bold; DejaVu licence alongside)
+\newfontfamily\labelfont{DejaVuSansCondensed}[Mapping=tex-text, Path=fonts/, Extension=.ttf,
+  UprightFont=*, BoldFont=*-Bold]
 
 % ---------- Colour palette (identical to main.tex) ----------
 \usepackage[table]{xcolor}
